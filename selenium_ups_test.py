@@ -93,28 +93,28 @@ while True:  # allows looping back to input
         contact_name = shipping_contact.get_attribute('value')  # gets value of contact name element
         print(f'\nShipment going to: {shipping_dest} ({contact_name})')  # grabs value from contact name element
         break
+while True:
     first_reference_input = input('Enter the first reference for this shipment: ')
-    while True:
-        textfield_first_shipment_reference = driver.find_element_by_id('reference_value1')  # finds first shipment reference field
-        textfield_first_shipment_reference.clear()  # clears data in field in case any exists
-        if len(first_reference_input) > 35:  # field only allows 35 characters
-            print('Only 35 characters are allowed.')
-            textfield_first_shipment_reference.clear()  # clears field if character limit exceeded
-            continue  # loops back to while True
-        else:
-            textfield_first_shipment_reference.send_keys(first_reference_input)  # send input if fits in 35 character limit
-            break
+    textfield_first_shipment_reference = driver.find_element_by_id('reference_value1')  # finds first shipment reference field
+    textfield_first_shipment_reference.clear()  # clears data in field in case any exists
+    if len(first_reference_input) > 35:  # field only allows 35 characters
+        print('Only 35 characters are allowed.')
+        textfield_first_shipment_reference.clear()  # clears field if character limit exceeded
+        continue  # loops back to while True
+    else:
+        textfield_first_shipment_reference.send_keys(first_reference_input)  # send input if fits in 35 character limit
+        break
+while True:
     second_reference_input = input('Enter the second reference for this shipment: ')
-    while True:
-        textfield_second_shipment_reference = driver.find_element_by_id('reference_value2')
+    textfield_second_shipment_reference = driver.find_element_by_id('reference_value2')
+    textfield_second_shipment_reference.clear()
+    if len(second_reference_input) > 35:
+        print('Only 35 characters are allowed.')
         textfield_second_shipment_reference.clear()
-        if len(second_reference_input) > 35:
-            print('Only 35 characters are allowed.')
-            textfield_second_shipment_reference.clear()
-            continue
-        else:
-            textfield_second_shipment_reference.send_keys(second_reference_input)
-            break  # ends loop when second field is filled to move onto next section
+        continue
+    else:
+        textfield_second_shipment_reference.send_keys(second_reference_input)
+        break  # ends loop when second field is filled to move onto next section
 
 first_reference_input = input('Enter the first reference for this shipment: ')
 second_reference_input = input('Enter the second reference for this shipment: ')
