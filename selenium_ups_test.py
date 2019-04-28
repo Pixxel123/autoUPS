@@ -3,14 +3,18 @@ from selenium.webdriver.support.ui import Select
 from ups_company_details import (ups_username, ups_password, main_office, engineering_subcontractor, my_email, ups_account_email, engineering_subcontractor_email)
 
 
-# driver = webdriver.Chrome('C:\\Users\\Admin\\Downloads\\chromedriver_win32\\chromedriver.exe')  # path to Chrome webdriver
 driver = webdriver.Chrome()  # chromedriver in C:\Windows folder
 driver.implicitly_wait(5)  # wait for page to load for 5 secs
+
+# ############################ START OF FUNCTION DECLARATIONS ###########################
 
 
 def login_to_ups(username, userpass):
     print('\nFiring up UPS...')
     driver.get('https://www.ups.com/uis/create')  # goes to UPS site
+    window_before = driver.window_handles[0]  # gets current window
+    window_before_title = driver.title  # names current window
+    print(window_before_title)
     # time.sleep(5)
     print(username + ' is logging into UPS.')  # feeback that user is logging in
     textfield_username = driver.find_element_by_id('userIdInput')  # finds username field and assigns variable to it
@@ -45,6 +49,8 @@ def collection_time(shipment_origin_location):
     minute_selected = latest_collection_minute.first_selected_option
     print(f'Collection time set to: {hour_selected.text}:{minute_selected.text} P.M')
 
+# ############################ END OF FUNCTION DECLARATIONS ###########################
+
 
 username_input = ups_username
 userpass_input = ups_password
@@ -62,13 +68,13 @@ shipment_origin_location = shipment_origin_input
 
 driver.implicitly_wait(5)  # wait for page to load
 
-if shipment_origin_input == 'DWE' or shipment_origin_input == 'Wheatland':
-    edit_ship_from = driver.find_element_by_id('shipFromEdit')
+if shipment_origin_input == 'DWE' or shipment_origin_input == 'Wheatland':  # accept both DWE and Wheatland as input for origin
+    edit_ship_from = driver.find_element_by_id('shipFromEdit')  # find the edit button for shipment origin address
     edit_ship_from.click()
-    driver.implicitly_wait(5)
-    ship_from_select = Select(driver.find_element_by_id('select_shipFrom'))
-    ship_from_select.select_by_visible_text('Wheatland')
-    update_ship_from = driver.find_element_by_name('next')
+    driver.implicitly_wait(5)  # wait for page load
+    ship_from_select = Select(driver.find_element_by_id('select_shipFrom'))  # find selection box in origin edit page
+    ship_from_select.select_by_visible_text('Wheatland')  # find option that matches Wheatland
+    update_ship_from = driver.find_element_by_name('next')  # update button on shipment origin page, returns user to main address page
     update_ship_from.click()
     driver.implicitly_wait(5)
 
@@ -84,10 +90,8 @@ while True:  # allows looping back to input
             print('Your chosen destination does not exist in the address book. Please try again.')
             continue
     else:
-        print('Filling in address fields...')
-        begin_ship_section_title = 'Begin Shipment'  # notify that user is on beginning page
-        formatted_title = '\n' + begin_ship_section_title.center(35, '*') + '\n'  # formatting to make heading stand out
-        print(formatted_title)
+        print('Filling in address fields...')  # notify that fields are about to be filled
+        print('\n' + 'Begin Shipment'.center(35, '*') + '\n')  # notify that user is on beginning page and formatting to make heading stand out
         shipping_select.select_by_visible_text(shipping_dest)
         shipping_contact = driver.find_element_by_id('shipToContactNameValue')  # finds element with contact name
         contact_name = shipping_contact.get_attribute('value')  # gets value of contact name element
@@ -116,8 +120,8 @@ while True:
         textfield_second_shipment_reference.send_keys(second_reference_input)
         break  # ends loop when second field is filled to move onto next section
 
-first_reference_input = input('Enter the first reference for this shipment: ')
-second_reference_input = input('Enter the second reference for this shipment: ')
+# first_reference_input = input('Enter the first reference for this shipment: ')
+# second_reference_input = input('Enter the second reference for this shipment: ')
 
 number_of_packages = input('Enter amount of packages in this shipment (Maximum is 20): ')
 total_shipment_weight = input('Enter the total weight of the packages in kg: ')
@@ -143,9 +147,7 @@ print('UPS Schedule Collection checked')
 goto_next_page()
 
 driver.implicitly_wait(5)
-collection_title = 'Set collection details'  # notify that user is on beginning page
-formatted_collection_title = '\n' + collection_title.center(35, '*') + '\n'  # formatting to make heading stand out
-print(formatted_collection_title)
+print('\n' + 'Set collection details'.center(35, '*') + '\n')  # formatting to make heading stand out
 # Collection time function to set time based on location
 collection_time(shipment_origin_location)
 
@@ -155,10 +157,7 @@ if first_email_notification_field.get_attribute('value') == ups_account_email or
     first_email_notification_field.send_keys(my_email)
     print(f'First email field changed to: {my_email}')
 
-
 goto_next_page()
 
 driver.implicitly_wait(5)
-review_title = 'Review shipment details'  # notify that user is on beginning page
-formatted_review_title = '\n' + review_title.center(35, '*') + '\n'  # formatting to make heading stand out
-print(formatted_review_title)
+print('\n' + 'Review shipment details'.center(35, '*') + '\n')  # formatting to make heading stand out
