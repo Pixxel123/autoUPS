@@ -3,7 +3,6 @@ from selenium.webdriver.support.ui import Select
 from ups_company_details import (ups_username, ups_password, main_office, engineering_subcontractor, my_email, ups_account_email, engineering_subcontractor_email)
 
 
-# driver = webdriver.Chrome('C:\\Users\\Admin\\Downloads\\chromedriver_win32\\chromedriver.exe')  # path to Chrome webdriver
 driver = webdriver.Chrome()  # chromedriver in C:\Windows folder
 driver.implicitly_wait(5)  # wait for page to load for 5 secs
 
@@ -62,7 +61,7 @@ shipment_origin_location = shipment_origin_input
 
 driver.implicitly_wait(5)  # wait for page to load
 
-if shipment_origin_input == 'DWE' or shipment_origin_input == 'Wheatland':
+if shipment_origin_input in engineering_subcontractor:
     edit_ship_from = driver.find_element_by_id('shipFromEdit')
     edit_ship_from.click()
     driver.implicitly_wait(5)
@@ -116,18 +115,23 @@ while True:
         textfield_second_shipment_reference.send_keys(second_reference_input)
         break  # ends loop when second field is filled to move onto next section
 
-first_reference_input = input('Enter the first reference for this shipment: ')
-second_reference_input = input('Enter the second reference for this shipment: ')
 
-number_of_packages = input('Enter amount of packages in this shipment (Maximum is 20): ')
+while True:
+    number_of_packages = int(input('Enter amount of packages in this shipment (Maximum is 20): '))  # convert input string to integer for value check
+    if number_of_packages > 20:  # package value dropdown only goes up to 20
+        print('Maxium selectable value is 20')
+        continue  # loops back to input
+    else:
+        break
+
 total_shipment_weight = input('Enter the total weight of the packages in kg: ')
 
 select_package_amount = Select(driver.find_element_by_id('packageCount'))
-select_package_amount.select_by_visible_text(number_of_packages)
+select_package_amount.select_by_visible_text(str(number_of_packages))  # converts integer from input back to string for selection
 package_weight_field = driver.find_element_by_id('shipmentTotalWeight')
-package_weight_field.clear()
+package_weight_field.clear()  # clear field in case value exists
 package_weight_field.send_keys(total_shipment_weight)
-print(f'Amount of packages: {number_of_packages} ')
+print(f'Amount of packages: {str(number_of_packages)}')
 print(f'Total weight of packages is: {total_shipment_weight}kg')
 email_notify_check = driver.find_element_by_id('emailNotify')
 email_notify_check.click()
