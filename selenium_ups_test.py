@@ -20,6 +20,8 @@ driver.implicitly_wait(5)  # wait for page to load for 5 secs
 
 config = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
 
+# ############################ START OF FUNCTION DECLARATIONS ###########################
+
 
 def login_to_ups(username, userpass):
     print('\nFiring up UPS...')
@@ -56,6 +58,8 @@ def collection_time(shipment_origin_location):
     hour_selected = latest_collection_hour.first_selected_option
     minute_selected = latest_collection_minute.first_selected_option
     print(f'Collection time set to: {hour_selected.text}:{minute_selected.text} P.M')
+
+# ############################ END OF FUNCTION DECLARATIONS ###########################
 
 
 def collection_details():
@@ -108,13 +112,14 @@ driver.implicitly_wait(5)  # wait for page to load
 
 window_before = driver.window_handles[0]  # current driver window
 
+
 if shipment_origin_input in engineering_subcontractor:
     edit_ship_from = driver.find_element_by_id('shipFromEdit')
     edit_ship_from.click()
-    driver.implicitly_wait(5)
-    ship_from_select = Select(driver.find_element_by_id('select_shipFrom'))
-    ship_from_select.select_by_visible_text('Wheatland')
-    update_ship_from = driver.find_element_by_name('next')
+    driver.implicitly_wait(5)  # wait for page load
+    ship_from_select = Select(driver.find_element_by_id('select_shipFrom'))  # find selection box in origin edit page
+    ship_from_select.select_by_visible_text('Wheatland')  # find option that matches Wheatland
+    update_ship_from = driver.find_element_by_name('next')  # update button on shipment origin page, returns user to main address page
     update_ship_from.click()
     driver.implicitly_wait(5)
 
@@ -130,10 +135,8 @@ while True:  # allows looping back to input
             print('Your chosen destination does not exist in the address book. Please try again.')
             continue
     else:
-        print('Filling in address fields...')
-        begin_ship_section_title = 'Begin Shipment'  # notify that user is on beginning page
-        formatted_title = '\n' + begin_ship_section_title.center(35, '*') + '\n'  # formatting to make heading stand out
-        print(formatted_title)
+        print('Filling in address fields...')  # notify that fields are about to be filled
+        print('\n' + 'Begin Shipment'.center(35, '*') + '\n')  # notify that user is on beginning page and formatting to make heading stand out
         shipping_select.select_by_visible_text(shipping_dest)
         shipping_contact = driver.find_element_by_id('shipToContactNameValue')  # finds element with contact name
         contact_name = shipping_contact.get_attribute('value')  # gets value of contact name element
@@ -194,9 +197,7 @@ print('UPS Schedule Collection checked')
 goto_next_page()
 
 driver.implicitly_wait(5)
-collection_title = 'Set collection details'  # notify that user is on beginning page
-formatted_collection_title = '\n' + collection_title.center(35, '*') + '\n'  # formatting to make heading stand out
-print(formatted_collection_title)
+print('\n' + 'Set collection details'.center(35, '*') + '\n')  # formatting to make heading stand out
 # Collection time function to set time based on location
 collection_time(shipment_origin_location)
 
@@ -205,7 +206,6 @@ if first_email_notification_field.get_attribute('value') == ups_account_email or
     first_email_notification_field.clear()
     first_email_notification_field.send_keys(my_email)
     print(f'First email field changed to: {my_email}')
-
 
 goto_next_page()
 
