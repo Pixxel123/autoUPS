@@ -1,16 +1,29 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException
 from ups_company_details import (ups_username, ups_password, main_office, engineering_subcontractor, my_email, ups_account_email, engineering_subcontractor_email)
+import pdfkit
+import datetime
 
 
-driver = webdriver.Chrome()  # chromedriver in C:\Windows folder
+# driver = webdriver.Chrome()  # chromedriver in C:\Windows folder
+
+# switched to Firefox since Chrome does not allow silent printing
+# Geckodriver and Firefox will need to be installed on user machine
+
+profile = webdriver.FirefoxProfile()
+profile.set_preference("print.always_print_silent", True)
+profile.set_preference("print.show_print_progress", False)
+
+driver = webdriver.Firefox(profile)
 driver.implicitly_wait(5)  # wait for page to load for 5 secs
+
+config = pdfkit.configuration(wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe")
 
 
 def login_to_ups(username, userpass):
     print('\nFiring up UPS...')
     driver.get('https://www.ups.com/uis/create')  # goes to UPS site
-    # time.sleep(5)
     print(username + ' is logging into UPS.')  # feeback that user is logging in
     textfield_username = driver.find_element_by_id('userIdInput')  # finds username field and assigns variable to it
     textfield_username.clear()  # clears username field in case there are any values
@@ -45,10 +58,42 @@ def collection_time(shipment_origin_location):
     print(f'Collection time set to: {hour_selected.text}:{minute_selected.text} P.M')
 
 
+def collection_details():
+    review_title = 'Review shipment details'
+    formatted_review_title = '\n' + review_title.center(35, '*') + '\n'  # formatting to make heading stand out
+    print(formatted_review_title)
+    final_shipment_destination = driver.find_element_by_id('shipToStaticAddress')
+    print(final_shipment_destination.text)
+    final_shipment_origin = driver.find_element_by_id('shipFromStaticAddress')
+    print(final_shipment_origin.text)
+    collection_address = driver.find_element_by_id('pickupAddress')
+    print(collection_address.text)
+
+
+def label_windows(window_to_switch):
+    while True:
+        driver.switch_to.window(window_to_switch)
+        try:
+            label_identifier = driver.find_element_by_tag_name('h1')
+            if label_identifier.text == 'Shipment Receipt':
+                print('Print Receipt pdf')
+                pdfkit.from_url(driver.current_url, 'Delivery ' + shipping_dest + ' ' + formatted_today_date + ' UPS Receipt' + '.pdf', configuration=config)
+                print('Shipment Receipt done')
+                break
+        except NoSuchElementException:
+            label_identifier = driver.find_element_by_class_name('large_text')
+            if label_identifier.text == 'UPS Internet Shipping: View/Print Label':
+                print('Printing label PDF')
+                pdfkit.from_url(driver.current_url, 'Delivery ' + shipping_dest + ' ' + formatted_today_date + ' UPS Label' + '.pdf', configuration=config)
+                print('Label PDF done')
+                break
+            break
+
+
 username_input = ups_username
 userpass_input = ups_password
 
-print('######### PLEASE NOTE THAT THIS TOOL IS ONLY FOR DELIVERIES TO EXISTING ADDRESSES, TO ADD NEW ADDRESSES OR SHIP ELSEWHERE PLEASE USE THE UPS WEBSITE #########\n')
+print('\n######### PLEASE NOTE THAT THIS TOOL IS ONLY FOR DELIVERIES TO EXISTING ADDRESSES, TO ADD NEW ADDRESSES OR SHIP ELSEWHERE PLEASE USE THE UPS WEBSITE #########\n')
 login_to_ups(username_input, userpass_input)
 
 shipment_origin_input = input('Where is the shipment coming from (DWE or NOW): ')
@@ -60,6 +105,8 @@ shipment_origin_location = shipment_origin_input
 # START OF SHIPMENT BOOKING ###
 
 driver.implicitly_wait(5)  # wait for page to load
+
+window_before = driver.window_handles[0]  # current driver window
 
 if shipment_origin_input in engineering_subcontractor:
     edit_ship_from = driver.find_element_by_id('shipFromEdit')
@@ -163,6 +210,27 @@ if first_email_notification_field.get_attribute('value') == ups_account_email or
 goto_next_page()
 
 driver.implicitly_wait(5)
-review_title = 'Review shipment details'  # notify that user is on beginning page
-formatted_review_title = '\n' + review_title.center(35, '*') + '\n'  # formatting to make heading stand out
-print(formatted_review_title)
+
+collection_details()
+
+driver.implicitly_wait(5)
+
+ship_now_button = driver.find_element_by_id('shipnow')
+ship_now_button.click()
+
+driver.implicitly_wait(5)
+
+formatted_today_date = datetime.date.today().strftime("%Y%m%d")
+
+tracking_number = driver.find_element_by_id('trackingNumber')
+print('Tracking Number: ' + tracking_number.text)
+
+driver.implicitly_wait(5)
+
+first_window_after = driver.window_handles[1]
+
+label_windows(first_window_after)
+
+second_window_after = driver.window_handles[2]
+
+label_windows(second_window_after)
